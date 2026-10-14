@@ -1,0 +1,46 @@
+/*
+ * Wuxia Sheet - background image overrides.
+ *
+ * Everything else about the sheet comes from the DC20 system styles. Only the image, its size and its
+ * position are replaced here; colours and blend modes stay as the system defines them. The selectors
+ * add the "wuxia-sheet" class so they out-rank the system's ".dc20rpg .actor_v2 ..." rules and only
+ * affect this sheet.
+ *
+ * Image slots (original image -> replacement):
+ *   header banner               header_background.jpg                 -> gold-bamboo.png
+ *   sidebar background          parchment.jpg (tiled)                 -> ink-landscape.png
+ *   sidebar top banner          char_banner_v1.jpg                    -> ink-landscape.png
+ *   class / subclass / ancestry / background bars (*_baner.jpg)       -> gold-bamboo.png
+ *
+ * The originals were sized and offset for their own artwork, so size and position are reset
+ * to "cover" and "center" instead of reusing those values.
+ */
+
+/* Header banner */
+.dc20rpg.wuxia-sheet .actor_v2 .char-sheet-header {
+  background-image: url("../images/gold-bamboo.png");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Sidebar background (replaces the tiled parchment) */
+.dc20rpg.wuxia-sheet .actor_v2 .char-sheet-details .sidetab-content {
+  background-image: url("../images/ink-landscape.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Sidebar top banner */
+.dc20rpg.wuxia-sheet .actor_v2 .char-sheet-details .baner {
+  background-image: url("../images/ink-landscape.png");
+  background-size: cover;
+  background-position: center;
+}
+
+/* Class, subclass, ancestry and background bars */
+.dc20rpg.wuxia-sheet .actor_v2 .char-sheet-details .unique-items :is(.class, .subclass, .ancestry, .background) {
+  background-image: url("../images/gold-bamboo.png");
+  background-size: cover;
+  background-position: center;
+}

@@ -1,0 +1,30 @@
+{
+  "id": "wuxia-sheet",
+  "title": "DC20 Wuxia Sheet",
+  "description": "An alternate character sheet for the DC20 system, styled with ink-wash and bamboo backgrounds. Phase 1: a copy of the original character sheet with new background images.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.367"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "dc20rpg",
+        "type": "system",
+        "compatibility": {
+          "minimum": "0.10.7.0",
+          "verified": "0.10.7.0"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/wuxia-sheet.mjs"
+  ],
+  "styles": [
+    "styles/wuxia-sheet.css"
+  ],
+  "url": "https://github.com/AprilLiar/Foundry_Character_Details_Module",
+  "readme": "README.md"
+}
