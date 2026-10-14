@@ -11,11 +11,26 @@ original sheet. Later phases will change the copy.
 - Foundry VTT v14 (verified on 14.367)
 - DC20 system 0.10.7.0 or newer
 
+## Installing in Foundry
+
+1. In Foundry's setup screen, open **Add-on Modules**, click **Install Module**, and paste this into the
+   **Manifest URL** field at the bottom, then click **Install**:
+
+   ```
+   https://github.com/AprilLiar/Foundry_Character_Details_Module/releases/latest/download/module.json
+   ```
+
+2. Enable the module in your world.
+
+Every push to the main branch publishes a new release automatically, so the newest change is available as
+soon as the build finishes (about a minute). To get it, use **Check for Updates** on the module in Foundry
+and update. The version is `<major>.<minor>.<number of commits>`, for example `0.1.7`. To start a new minor
+or major version, edit `version` in `module.json`. The release process is in `.github/`.
+
 ## Using it
 
-1. Put this folder in your Foundry `Data/modules/` directory as `wuxia-sheet`, then enable the module in your world.
-2. Open a character, use the sheet configuration (the Sheet button in the sheet's window header) and pick
-   "Wuxia Sheet". The module does not become the default sheet, so existing characters are not affected.
+Open a character, use the sheet configuration (the Sheet button in the sheet's window header) and pick
+"Wuxia Sheet". The module does not become the default sheet, so existing characters are not affected.
 
 Only `character` actors can use it. NPCs, companions and storage actors keep the original sheet.
 

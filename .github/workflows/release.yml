@@ -1,0 +1,44 @@
+name: Release
+
+# Every push to this branch builds the module and publishes it as a GitHub release.
+# Foundry installs and updates the module from the "latest" release's module.json.
+# If the main branch is ever renamed or replaced, change the branch name below.
+on:
+  push:
+    branches:
+      - claude/jolly-allen-w7wetn
+
+permissions:
+  contents: write
+
+# Releases are published one at a time, in push order
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the full history is needed to count commits for the version
+
+      - name: Build the release files
+        run: bash .github/scripts/package.sh "$GITHUB_REPOSITORY" dist
+
+      - name: Publish the release
+        run: |
+          VERSION=$(cat dist/version.txt)
+          # The commit message is the release description (without the attribution trailers)
+          git log -1 --format=%B | grep -v -e '^Co-Authored-By:' -e '^Claude-Session:' > dist/notes.md || true
+          # A re-run of the same commit replaces its release instead of failing
+          gh release delete "v$VERSION" --cleanup-tag --yes 2>/dev/null || true
+          gh release create "v$VERSION" dist/module.json dist/*.zip \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes-file dist/notes.md \
+            --latest
