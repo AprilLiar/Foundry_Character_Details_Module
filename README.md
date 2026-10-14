@@ -34,6 +34,10 @@ Open a character, use the sheet configuration (the Sheet button in the sheet's w
 
 Only `character` actors can use it. NPCs, companions and storage actors keep the original sheet.
 
+If "Wuxia Sheet" is missing from the list, reload the world after updating the module, then press F12 in the
+browser, open the Console tab and look for messages starting with `wuxia-sheet`. A successful start logs
+"Wuxia Sheet registered". A red message on screen when the world loads means registration failed.
+
 ## How it works
 
 | File | Purpose |
