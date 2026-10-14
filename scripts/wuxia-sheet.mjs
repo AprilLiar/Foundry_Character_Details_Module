@@ -4,40 +4,43 @@
  * The sheet reuses all logic of the system's own character sheet and only swaps in this
  * module's copy of the template, so the layout can be changed here without touching the system.
  *
- * The system does not export its sheet class, so it has to be found first. This is tried during
- * "init", and again during "setup" (when every package has run its init hook). If it still cannot be
- * found, an error is shown on screen and written to the browser console.
+ * The system does not export its sheet class, so it has to be found first. In order:
+ *   1. during "init", by searching the registered actor sheets for the class by name,
+ *   2. once the game is ready, from the sheet of a character actor (a temporary one if the world has none),
+ *      which is how Foundry itself resolves the sheet class,
+ *   3. when a character sheet of the system is first opened.
+ * If none of that works, an error is shown on screen and the details are written to the browser console.
  */
 const MODULE_ID = "wuxia-sheet";
 const SYSTEM_ID = "dc20rpg";
 const SYSTEM_SHEET_NAME = "DC20RpgActorSheet";
-const SYSTEM_SHEET_FILE = `systems/${SYSTEM_ID}/module/sheets/actor-sheet.mjs`;
 const TEMPLATE_PATH = `modules/${MODULE_ID}/templates/character.hbs`;
 
 let registered = false;
-let setupAttempt = Promise.resolve();
 
-Hooks.once("init", () => { register("init"); });
-Hooks.once("setup", () => { setupAttempt = register("setup"); });
-Hooks.once("ready", async () => {
-  await setupAttempt;
-  if (registered) return;
-  ui.notifications.error("Wuxia Sheet could not be registered. Open the browser console (F12) and look for messages starting with 'wuxia-sheet'.");
+Hooks.once("init", () => {
+  register(findSheetClass(cls => cls.name === SYSTEM_SHEET_NAME), "init");
 });
 
-async function register(stage) {
+Hooks.once("ready", () => {
+  if (!registered) register(sheetClassFromActor(), "ready");
   if (registered) return;
-  try {
-    let SystemSheet = findSheetClass(cls => cls.name === SYSTEM_SHEET_NAME);
-    if (!SystemSheet && stage === "setup") SystemSheet = await importSystemSheet();
-    if (!SystemSheet) {
-      console.warn(`${MODULE_ID} | (${stage}) The DC20 character sheet class was not found.`, CONFIG.Actor?.sheetClasses);
-      return;
-    }
 
+  console.error(`${MODULE_ID} | The DC20 character sheet class was not found. Registered actor sheets:\n${describe(CONFIG.Actor?.sheetClasses).join("\n")}`);
+  ui.notifications.error("Wuxia Sheet could not be registered. Open the browser console (F12) and look for messages starting with 'wuxia-sheet'. It may still become available after a character sheet is opened.");
+});
+
+// Last resort: the first time a character sheet of the system is shown, its class is known for sure
+Hooks.on("renderActorSheet", app => {
+  if (!registered && isSystemCharacterSheet(app)) register(app.constructor, "first sheet render");
+});
+
+function register(SystemSheet, stage) {
+  if (registered || !SystemSheet) return;
+  try {
     registerWuxiaSheet(SystemSheet);
     registered = true;
-    console.log(`${MODULE_ID} | Wuxia Sheet registered (${stage}).`);
+    console.log(`${MODULE_ID} | Wuxia Sheet registered (${stage}), based on ${SystemSheet.name}.`);
   } catch (error) {
     console.error(`${MODULE_ID} | (${stage}) Could not register the Wuxia Sheet.`, error);
   }
@@ -67,8 +70,31 @@ function registerWuxiaSheet(SystemSheet) {
   });
 
   if (!findSheetClass(cls => cls === WuxiaActorSheet)) {
-    console.warn(`${MODULE_ID} | The sheet was registered but is not listed in CONFIG.Actor.sheetClasses.`, CONFIG.Actor?.sheetClasses);
+    console.warn(`${MODULE_ID} | The sheet was registered, but was not found in CONFIG.Actor.sheetClasses. Registered actor sheets:\n${describe(CONFIG.Actor?.sheetClasses).join("\n")}`);
   }
+}
+
+/** True for a sheet that belongs to the DC20 system and is showing a character. */
+function isSystemCharacterSheet(sheet) {
+  if (sheet?.actor?.type !== "character") return false;
+  return sheet.constructor?.name === SYSTEM_SHEET_NAME || String(sheet.template ?? "").includes(`systems/${SYSTEM_ID}/`);
+}
+
+/**
+ * The class of the sheet that Foundry uses for characters. Taken from a character of the world, or from
+ * a temporary one that is never saved.
+ */
+function sheetClassFromActor() {
+  try {
+    const actor = game.actors?.find(a => a.type === "character")
+      ?? new CONFIG.Actor.documentClass({ name: "Wuxia Sheet probe", type: "character" });
+    const sheet = actor.sheet;
+    if (isSystemCharacterSheet(sheet)) return sheet.constructor;
+    console.warn(`${MODULE_ID} | The sheet of a character is ${sheet?.constructor?.name}, which does not look like the DC20 sheet.`);
+  } catch (error) {
+    console.warn(`${MODULE_ID} | Could not get the sheet class from a character.`, error);
+  }
+  return undefined;
 }
 
 /**
@@ -87,13 +113,15 @@ function findSheetClass(matches, node = CONFIG.Actor?.sheetClasses, depth = 0) {
   return undefined;
 }
 
-/**
- * Fallback: load the class from the system's own file. The system loads that same file, so this normally
- * gives the very same class, not a copy.
- */
-async function importSystemSheet() {
-  const url = foundry.utils.getRoute(SYSTEM_SHEET_FILE);
-  const systemFile = await import(url);
-  console.warn(`${MODULE_ID} | The DC20 sheet class was not in the sheet registry, using the one imported from ${url}.`);
-  return systemFile[SYSTEM_SHEET_NAME];
+/** A readable listing of the registered sheets, for the console. */
+function describe(node, path = "sheetClasses", depth = 0, lines = []) {
+  if (typeof node === "function") lines.push(`${path}: class ${node.name}`);
+  else if (!node || typeof node !== "object") lines.push(`${path}: ${node === null || node === undefined ? node : typeof node}`);
+  else if (depth > 3) lines.push(`${path}: object with keys ${Object.keys(node).join(", ") || "(none)"}`);
+  else {
+    const entries = node instanceof Map ? [...node.entries()] : Object.entries(node);
+    if (!entries.length) lines.push(`${path}: (empty)`);
+    for (const [key, value] of entries) describe(value, `${path} > ${key}`, depth + 1, lines);
+  }
+  return lines;
 }
