@@ -38,6 +38,30 @@ If "Wuxia Sheet" is missing from the list, reload the world after updating the m
 browser, open the Console tab and look for messages starting with `wuxia-sheet`. A successful start logs
 "Wuxia Sheet registered". A red message on screen when the world loads means registration failed.
 
+## Color palette
+
+`palettes/wuxia.json` is a color palette for the DC20 system. It replaces the standard purple with cinnabar red
+and gold, to match the Wuxia Sheet backgrounds. It is a complete palette in the system's own export format:
+18 of the 83 colors are changed, the rest are the system defaults. Changed: the primary colors, the table colors,
+the highlight and action point colors, the character sheet colors (main colors, tables, and the tints over the
+header, sidebar and class/ancestry bars). The NPC (blue) and storage (green) sheets and the resource and health
+colors are unchanged.
+
+To use it:
+
+1. Open the file in your browser, select all and copy it. The address is your Foundry address followed by
+   `/modules/wuxia-sheet/palettes/wuxia.json`, or use the
+   [file on GitHub](https://github.com/AprilLiar/Foundry_Character_Details_Module/blob/claude/jolly-allen-w7wetn/palettes/wuxia.json).
+2. As the GM, open Foundry's settings, then Configure Settings, System Settings, and click
+   **Open Color Palette Selection** (Select Color Palette).
+3. Click the import icon next to the palette list, paste the text and click **Import Palette**.
+4. Choose `wuxia` in the list and click **Use Selected Palette**.
+
+Imported palettes are shared by the whole world, but each user chooses their own palette in the same dialog, so
+players have to do step 4 themselves. The system refuses to import a palette whose name already exists, so to
+update it later, remove the old `wuxia` palette with the minus icon first. Unlike the built-in `default`
+palette, you can edit its colors in the dialog and save them with **Update Color Palette**.
+
 ## How it works
 
 | File | Purpose |
